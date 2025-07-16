@@ -1,1 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multi-Page Viewer with Download (PDF or Image)</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #f9f9f9;
+      height: 100%;
+      overflow: auto;
+    }
 
+
+    #controls {
+      position: sticky;
+      top: 0;
+      background: #f9f9f9;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      z-index: 10;
+      text-align: left;
+    }
+
+
+    #download-btn {
+      padding: 6px 12px;
+      font-size: 14px;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+
+    #viewer-container {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+
+    .pdf-page, .image-page {
+      margin-bottom: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+
+
+    canvas, img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+  <script src="https://urldefense.com/v3/__https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js__;!!KaA_j8q37Q!A345I-FiCwny2UlHT2Pm7GOjCswHK7nX9qu_HBV4yGojYhIIQ7U230uu8jutLz_MeVe6b7Nzoe_laD8lOpo1JtRiLP3vuKFWww$ "></script>
+</head>
+<body>
+
+
+  <div id="controls">
+    <button id="download-btn">Download File</button>
+  </div>
+
+
+  <div id="viewer-container"></div>
+
+
+  <script>
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+
+    let fileUrl = getQueryParam('file') || 'Creative Test.pdf';
+    const container = document.getElementById('viewer-container');
+
+
+    // Download button
+    document.getElementById('download-btn').addEventListener('click', function () {
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = fileUrl.split('/').pop();
+      link.click();
+    });
+
+
+    // Determine if it's a PDF or image
+    const isPDF = fileUrl.toLowerCase().endsWith('.pdf');
+    if (isPDF) {
+      // Load PDF with PDF.js
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://urldefense.com/v3/__https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js__;!!KaA_j8q37Q!A345I-FiCwny2UlHT2Pm7GOjCswHK7nX9qu_HBV4yGojYhIIQ7U230uu8jutLz_MeVe6b7Nzoe_laD8lOpo1JtRiLP2KpZFsUg$ ';
+
+
+      pdfjsLib.getDocument(fileUrl).promise.then(pdf => {
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          pdf.getPage(pageNum).then(page => {
+            const viewport = page.getViewport({ scale: 1 });
+            const scale = (window.innerWidth * 0.9) / viewport.width;
+            const scaledViewport = page.getViewport({ scale });
+
+
+            const canvas = document.createElement('canvas');
+            canvas.className = 'pdf-page';
+            canvas.width = scaledViewport.width * window.devicePixelRatio;
+            canvas.height = scaledViewport.height * window.devicePixelRatio;
+            canvas.style.width = `${scaledViewport.width}px`;
+            canvas.style.height = `${scaledViewport.height}px`;
+
+
+            const context = canvas.getContext('2d');
+            context.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+
+            const renderContext = {
+              canvasContext: context,
+              viewport: scaledViewport
+            };
+
+
+            page.render(renderContext);
+            container.appendChild(canvas);
+          });
+        }
+      }).catch(error => {
+        container.innerHTML = `<p style="color:red; font-size:18px; text-align:center;">⚠️ Failed to load PDF: ${error.message}</p>`;
+      });
+    } else {
+      // Assume it's an image file (png, jpg, etc.)
+      const img = document.createElement('img');
+      img.src = fileUrl;
+      img.alt = 'Embedded Image';
+      img.className = 'image-page';
+      container.appendChild(img);
+    }
+  </script>
+</body>
+</html>

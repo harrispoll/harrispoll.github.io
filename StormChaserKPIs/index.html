@@ -1,1 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Responsive Document Viewer</title>
+  <style>
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #f9f9f9;
+      box-sizing: border-box;
+    }
+
+
+    #viewer-container {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #fff;
+    }
+
+
+    canvas, img {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      image-rendering: auto;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+    }
+  </style>
+
+
+  <!-- PDF.js -->
+  <script src="https://urldefense.com/v3/__https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js__;!!KaA_j8q37Q!A345I-FiCwny2UlHT2Pm7GOjCswHK7nX9qu_HBV4yGojYhIIQ7U230uu8jutLz_MeVe6b7Nzoe_laD8lOpo1JtRiLP3vuKFWww$ "></script>
+</head>
+<body>
+  <div id="viewer-container">
+    <canvas id="pdf-canvas" style="display: none;"></canvas>
+    <img id="image-viewer" style="display: none;" />
+  </div>
+
+
+  <script>
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
 

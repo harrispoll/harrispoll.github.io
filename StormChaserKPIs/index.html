@@ -39,7 +39,7 @@
 
 
   <!-- PDF.js -->
-  <script src="https://urldefense.com/v3/__https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js__;!!KaA_j8q37Q!A345I-FiCwny2UlHT2Pm7GOjCswHK7nX9qu_HBV4yGojYhIIQ7U230uu8jutLz_MeVe6b7Nzoe_laD8lOpo1JtRiLP3vuKFWww$ "></script>
+  <script src="https://urldefense.com/v3/__https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js__;!!KaA_j8q37Q!DFjo3MZqa82F11UPJydBcX62g2vrZ_ij66A12E1xlys-blCKKvFEglmzK-pOXXFzywpNO2D94xO5vmpIS0O1BjC51um9WTroxA$ "></script>
 </head>
 <body>
   <div id="viewer-container">
@@ -54,3 +54,75 @@
       return urlParams.get(param);
     }
 
+
+    const fileUrl = getQueryParam('file');
+    if (!fileUrl) {
+      document.body.innerHTML = "<p style='color:red;text-align:center;'>No file specified. Use ?file=yourfile.pdf or .png</p>";
+      throw new Error("No file specified");
+    }
+
+
+    const isPDF = fileUrl.toLowerCase().endsWith('.pdf');
+    const canvas = document.getElementById('pdf-canvas');
+    const ctx = canvas.getContext('2d');
+    const imageViewer = document.getElementById('image-viewer');
+    const container = document.getElementById('viewer-container');
+
+
+    if (isPDF) {
+      canvas.style.display = 'block';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://urldefense.com/v3/__https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js__;!!KaA_j8q37Q!DFjo3MZqa82F11UPJydBcX62g2vrZ_ij66A12E1xlys-blCKKvFEglmzK-pOXXFzywpNO2D94xO5vmpIS0O1BjC51umtxNwuQQ$ ';
+
+
+      let pdfDoc = null;
+      let pageNum = 1;
+
+
+      function renderPage() {
+        pdfDoc.getPage(pageNum).then(page => {
+          const containerWidth = container.clientWidth;
+          const containerHeight = container.clientHeight;
+
+
+          const unscaled = page.getViewport({ scale: 1 });
+          const widthScale = containerWidth / unscaled.width;
+          const heightScale = containerHeight / unscaled.height;
+          const scale = Math.min(widthScale, heightScale);
+
+
+          const outputScale = window.devicePixelRatio || 1;
+          const viewport = page.getViewport({ scale: scale * outputScale });
+
+
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.style.width = `${viewport.width / outputScale}px`;
+          canvas.style.height = `${viewport.height / outputScale}px`;
+
+
+          const renderContext = {
+            canvasContext: ctx,
+            viewport: viewport
+          };
+
+
+          page.render(renderContext);
+        });
+      }
+
+
+      pdfjsLib.getDocument(fileUrl).promise.then(doc => {
+        pdfDoc = doc;
+        renderPage();
+      });
+
+
+      window.addEventListener('resize', renderPage);
+    } else {
+      imageViewer.style.display = 'block';
+      imageViewer.src = fileUrl;
+      imageViewer.alt = 'Document Image';
+    }
+  </script>
+</body>
+</html>
